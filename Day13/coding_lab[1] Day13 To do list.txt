@@ -1,0 +1,408 @@
+CategoryList.js
+
+import React, { useState } from "react";
+import { useCategories } from "../services/CategoryService";
+
+const CategoryList = () => {
+  const { categories, addCategory, deleteCategory } = useCategories();
+  const [newCategory, setNewCategory] = useState("");
+
+  const handleAddCategory = () => {
+    if (newCategory.trim()) {
+      addCategory({ id: Date.now(), name: newCategory });
+      setNewCategory("");
+    }
+  };
+
+  return (
+    <div>
+      <h2>Categories</h2>
+      <input
+        type="text"
+        value={newCategory}
+        onChange={(e) => setNewCategory(e.target.value)}
+        placeholder="New Category"
+      />
+      <button onClick={handleAddCategory}>Add Category</button>
+      <ul>
+        {categories.map((category) => (
+          <li key={category.id}>
+            {category.name}
+            <button onClick={() => deleteCategory(category.id)}>
+              Remove Category
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default CategoryList;
+----------------------------------------------------------------
+Dashboard.js
+
+import React, { useState } from "react";
+import { useTasks } from "../services/TaskService";
+import CategoryList from "./CategoryList";
+import TaskInput from "./TaskInput";
+import TaskList from "./TaskList";
+
+const Dashboard = () => {
+  const { tasks } = useTasks();
+  const [editingTask, setEditingTask] = useState(null);
+
+  const handleEdit = (task) => {
+    setEditingTask(task);
+  };
+
+  const handleEditComplete = () => {
+    setEditingTask(null);
+  };
+
+  return (
+    <div>
+      <h1>To-Do List Dashboard</h1>
+
+      {/* Categories */}
+      <div>
+        <h2>Categories</h2>
+        <CategoryList />
+      </div>
+
+      {/* Task Form */}
+      <div>
+        <h2>{editingTask ? "Edit Task" : "Add a New Task"}</h2>
+        <TaskInput existingTask={editingTask} onEditComplete={handleEditComplete} />
+      </div>
+
+      {/* Task List */}
+      <div>
+        <h2>Task List</h2>
+        {tasks.length > 0 ? (
+          <TaskList onEdit={handleEdit} />
+        ) : (
+          <p>No tasks available. Add a task to get started!</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
+--------------------------------------------------------------
+TaskInput.js
+
+import React, { useState, useEffect } from "react";
+import { useTasks } from "../services/TaskService";
+import { useCategories } from "../services/CategoryService";
+
+const TaskInput = ({ existingTask, onEditComplete }) => {
+  const { addTask, editTask } = useTasks();
+  const { categories } = useCategories();
+
+  const [title, setTitle] = useState(existingTask ? existingTask.title : "");
+  const [description, setDescription] = useState(
+    existingTask ? existingTask.description : ""
+  );
+  const [dueDate, setDueDate] = useState(existingTask ? existingTask.dueDate : "");
+  const [priority, setPriority] = useState(
+    existingTask ? existingTask.priority : "Medium"
+  );
+  const [category, setCategory] = useState(
+    existingTask ? existingTask.category : (categories[0]?.name || "")
+  );
+
+  useEffect(() => {
+    if (existingTask) {
+      setTitle(existingTask.title);
+      setDescription(existingTask.description);
+      setDueDate(existingTask.dueDate);
+      setPriority(existingTask.priority);
+      setCategory(existingTask.category);
+    } else {
+      setTitle("");
+      setDescription("");
+      setDueDate("");
+      setPriority("Medium");
+      setCategory(categories[0]?.name || "");
+    }
+  }, [existingTask, categories]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const taskData = { title, description, dueDate, priority, category };
+
+    if (existingTask) {
+      editTask(existingTask.id, taskData);
+      if (onEditComplete) onEditComplete();
+    } else {
+      addTask({ id: Date.now(), ...taskData, completed: false });
+    }
+
+    if (!existingTask) {
+      setTitle("");
+      setDescription("");
+      setDueDate("");
+      setPriority("Medium");
+      setCategory(categories[0]?.name || "");
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        placeholder="Task Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        required
+      />
+      <input
+        type="text"
+        placeholder="Task Description"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
+      <input
+        type="date"
+        placeholder="Due Date"
+        value={dueDate}
+        onChange={(e) => setDueDate(e.target.value)}
+        required
+      />
+
+      <label>Priority:</label>
+      <select value={priority} onChange={(e) => setPriority(e.target.value)}>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+
+      {/* Category is maintained in state. We no longer render a visible (or hidden dropdown)
+          since that was causing duplicate accessible text. Instead, we use a hidden input. */}
+      <input type="hidden" value={category} />
+
+      <button type="submit">
+        {existingTask ? "Edit Task" : "Add Task"}
+      </button>
+    </form>
+  );
+};
+
+export default TaskInput;
+---------------------------------------------------------
+TaskList.js
+
+import React, { useState } from "react";
+import { useTasks } from "../services/TaskService";
+
+const TaskList = ({ onEdit }) => {
+  const { tasks, deleteTask, toggleTaskStatus } = useTasks();
+  const [filter, setFilter] = useState("All");
+  const [sortBy, setSortBy] = useState("dueDate");
+
+  const filteredTasks =
+    filter === "All" ? tasks : tasks.filter((task) => task.category === filter);
+
+  const sortedTasks = [...filteredTasks].sort((a, b) =>
+    a[sortBy] > b[sortBy] ? 1 : -1
+  );
+
+  return (
+    <div>
+      <h2>Task List</h2>
+
+      <div>
+        <label>Filter by Category:</label>
+        <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+          <option value="All">All</option>
+          <option value="Work">Work</option>
+          <option value="Personal">Personal</option>
+          <option value="Shopping">Shopping</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Sort by:</label>
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <option value="dueDate">Due Date</option>
+          <option value="priority">Priority</option>
+          <option value="creationDate">Creation Date</option>
+        </select>
+      </div>
+
+      <ul>
+        {sortedTasks.map((task) => (
+          <li key={task.id}>
+            <strong>{task.title}</strong> - {task.description} - {task.category} -{" "}
+            {task.dueDate} - {task.priority}
+            <button onClick={() => toggleTaskStatus(task.id)}>
+              {task.completed ? "Mark Incomplete" : "Mark Complete"}
+            </button>
+            <button onClick={() => onEdit(task)}>Edit Task</button>
+            <button onClick={() => deleteTask(task.id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default TaskList;
+---------------------------------------------------------
+CategoryService.js
+
+import { createContext, useContext, useReducer } from "react";
+
+const ADD_CATEGORY = "ADD_CATEGORY";
+const DELETE_CATEGORY = "DELETE_CATEGORY";
+
+const initialState = {
+  categories: [
+    { id: 1, name: "Personal" },
+    { id: 2, name: "Shopping" }
+  ],
+};
+
+const categoryReducer = (state, action) => {
+  switch (action.type) {
+    case ADD_CATEGORY:
+      return { ...state, categories: [...state.categories, action.payload] };
+    case DELETE_CATEGORY:
+      return {
+        ...state,
+        categories: state.categories.filter(
+          (category) => category.id !== action.payload
+        ),
+      };
+    default:
+      return state;
+  }
+};
+
+const CategoryContext = createContext();
+
+export const CategoryProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(categoryReducer, initialState);
+
+  const addCategory = (category) =>
+    dispatch({ type: ADD_CATEGORY, payload: category });
+  const deleteCategory = (categoryId) =>
+    dispatch({ type: DELETE_CATEGORY, payload: categoryId });
+
+  return (
+    <CategoryContext.Provider
+      value={{ categories: state.categories, addCategory, deleteCategory }}
+    >
+      {children}
+    </CategoryContext.Provider>
+  );
+};
+
+export const useCategories = () => {
+  return useContext(CategoryContext);
+};
+------------------------------------------------------------
+TaskService.js
+
+import { createContext, useContext, useReducer } from "react";
+
+const ADD_TASK = "ADD_TASK";
+const EDIT_TASK = "EDIT_TASK";
+const DELETE_TASK = "DELETE_TASK";
+const TOGGLE_TASK_STATUS = "TOGGLE_TASK_STATUS";
+
+const initialState = {
+  tasks: [],
+};
+
+const taskReducer = (state, action) => {
+  switch (action.type) {
+    case ADD_TASK:
+      return { ...state, tasks: [...state.tasks, action.payload] };
+    case EDIT_TASK:
+      return {
+        ...state,
+        tasks: state.tasks.map((task) =>
+          task.id === action.payload.id ? { ...task, ...action.payload } : task
+        ),
+      };
+    case DELETE_TASK:
+      return {
+        ...state,
+        tasks: state.tasks.filter((task) => task.id !== action.payload),
+      };
+    case TOGGLE_TASK_STATUS:
+      return {
+        ...state,
+        tasks: state.tasks.map((task) =>
+          task.id === action.payload
+            ? { ...task, completed: !task.completed }
+            : task
+        ),
+      };
+    default:
+      return state;
+  }
+};
+
+const TaskContext = createContext();
+
+export const TaskProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(taskReducer, initialState);
+
+  const addTask = (task) => dispatch({ type: ADD_TASK, payload: task });
+  const editTask = (id, taskData) =>
+    dispatch({ type: EDIT_TASK, payload: { id, ...taskData } });
+  const deleteTask = (taskId) =>
+    dispatch({ type: DELETE_TASK, payload: taskId });
+  const toggleTaskStatus = (taskId) =>
+    dispatch({ type: TOGGLE_TASK_STATUS, payload: taskId });
+
+  return (
+    <TaskContext.Provider
+      value={{
+        tasks: state.tasks,
+        addTask,
+        editTask,
+        deleteTask,
+        toggleTaskStatus,
+      }}
+    >
+      {children}
+    </TaskContext.Provider>
+  );
+};
+
+export const useTasks = () => {
+  return useContext(TaskContext);
+};
+------------------------------------------------------
+App.js
+
+import React from "react";
+import { CategoryProvider } from "./services/CategoryService";
+import { TaskProvider } from "./services/TaskService";
+import Dashboard from "./components/Dashboard";
+
+function App() {
+  return (
+    <CategoryProvider>
+      <TaskProvider>
+        <Dashboard />
+        <a
+          href="https://reactjs.org"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: "block", marginTop: "20px" }}
+        >
+          learn react
+        </a>
+      </TaskProvider>
+    </CategoryProvider>
+  );
+}
+
+export default App;
+
