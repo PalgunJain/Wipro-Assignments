@@ -1,0 +1,23 @@
+.dashboard {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .dashboard-nav {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .dashboard-nav a {
+    margin: 0 10px;
+    text-decoration: none;
+    padding: 8px 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    color: #333;
+  }
+  
+  .dashboard-nav a:hover {
+    background-color: #f0f0f0;
+  }

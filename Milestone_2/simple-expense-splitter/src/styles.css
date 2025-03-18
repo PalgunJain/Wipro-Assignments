@@ -1,0 +1,122 @@
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+  }
+  
+  .container {
+    width: 80%;
+    max-width: 960px;
+    margin: 20px auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Navigation Bar Styles */
+  .expense-summary-nav,
+  .expense-list-nav,
+  .friend-list-nav {
+    display: flex;
+    justify-content: center;
+    background-color: #e9ecef;
+    padding: 10px 0;
+    border-radius: 8px 8px 0 0;
+    margin-bottom: 20px;
+  }
+  
+  .expense-summary-nav a,
+  .expense-list-nav a,
+  .friend-list-nav a {
+    color: #333; /* Dark text */
+    text-decoration: none;
+    padding: 10px 20px;
+    margin: 0 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .expense-summary-nav a:hover,
+  .expense-list-nav a:hover,
+  .friend-list-nav a:hover {
+    background-color: #dee2e6; 
+  }
+  
+  /* Heading Styles */
+  .expense-summary-content h2,
+  .expense-list-content h2,
+  .friend-list-content h2 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  /* Content Styles */
+  .expense-summary-content ul,
+  .expense-list-content ul,
+  .friend-list-content ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .expense-summary-content li,
+  .expense-list-content li,
+  .friend-list-content li {
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+  }
+  
+  /* Expense Form Styles */
+  .expense-form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 300px;
+    margin-bottom: 20px;
+  }
+  
+  .expense-form .form-group {
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .expense-form label {
+    margin-bottom: 5px;
+  }
+  
+  .expense-form input[type="number"],
+  .expense-form input[type="text"],
+  .expense-form select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+  }
+  
+  .expense-form button {
+    background-color: #28a745; /* Green button */
+    color: #fff;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .expense-form button:hover {
+    background-color: #218838;
+  }
+  
+  /* Split Options */
+  .split-options {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
